@@ -1,32 +1,51 @@
 name: Build VoidLink IPA
 
 on:
-  push:
-    branches: [ "feat/frame_pacing_metal" ]
-  workflow_dispatch:
-
+  workflow_dispatch: # Allows manual triggering from the Actions tab
 
 jobs:
   build:
-    name: Build VoidLink IPA
+    name: Build and Package
     runs-on: macos-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: Integration
+          submodules: recursive # CRITICAL: Fetches moonlight-common and other dependencies
 
-      - name: Checkout submodules
-        run: "git submodule update --init --recursive"
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
-      - name: Build VoidLink
+      - name: Build Unsigned App
         run: |
-          xcodebuild -verbose -scheme VoidLink -sdk iphoneos -configuration Debug archive -archivePath $PWD/build/VoidLink.xcarchive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED="NO" CODE_SIGN_ENTITLEMENTS="" CODE_SIGNING_ALLOWED="NO"
-          mkdir -p ./build/IPA && mkdir -p ./build/IPA/Payload
-          cp -r ./build/VoidLink.xcarchive/Products/Applications/VoidLink.app ./build/IPA/Payload/VoidLink.app
-          cd ./build/IPA && zip -r ../../build/VoidLink.ipa ./Payload/* && cd ../..
+          # Note: If the fork renamed the project file, replace Limelight.xcodeproj with the correct name
+          xcodebuild build \
+            -project "Limelight.xcodeproj" \
+            -scheme "Limelight" \
+            -configuration Release \
+            -sdk iphoneos \
+            -arch arm64 \
+            CONFIGURATION_BUILD_DIR="$(pwd)/build" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Upload VoidLink IPA to Artifacts
+      - name: Package into IPA
+        run: |
+          # Sideloading utilities expect the .app to be inside a "Payload" directory
+          mkdir -p Payload
+          # Move the compiled app into the Payload folder
+          mv build/*.app Payload/
+          # Zip the folder and rename the extension to .ipa
+          zip -r VoidLink.ipa Payload
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VoidLink.ipa
-          path: build/VoidLink.ipa
+          name: VoidLink-IPA
+          path: VoidLink.ipa
+          retention-days: 7
