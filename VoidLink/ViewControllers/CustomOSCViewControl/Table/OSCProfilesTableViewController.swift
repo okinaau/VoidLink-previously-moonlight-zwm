@@ -95,8 +95,8 @@ final class OSCProfilesTableViewController: UIViewController, UITableViewDelegat
         view.addGestureRecognizer(tap)
 
         if GenericUtils.liquidGlassEnabled, #available(iOS 26.0, *) {
-            profileTableViewNavigationItem.leftBarButtonItems?.forEach { $0.hidesSharedBackground = true }
-            profileTableViewNavigationItem.rightBarButtonItems?.forEach { $0.hidesSharedBackground = true }
+            // profileTableViewNavigationItem.leftBarButtonItems?.forEach { $0.hidesSharedBackground = true }
+            // profileTableViewNavigationItem.rightBarButtonItems?.forEach { $0.hidesSharedBackground = true }
         }
     }
 
