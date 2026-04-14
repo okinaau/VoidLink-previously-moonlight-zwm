@@ -805,13 +805,13 @@ class PressureCurveViewController: UIViewController, UIGestureRecognizerDelegate
         if #available(iOS 26.0, *) {
             if let buttons = navItem.leftBarButtonItems {
                 for button in buttons {
-                    button.hidesSharedBackground = true
+                 //   button.hidesSharedBackground = true
                     button.tintColor = .tintColor
                 }
             }
             if let buttons = navItem.rightBarButtonItems {
                 for button in buttons {
-                    button.hidesSharedBackground = true
+                 //   button.hidesSharedBackground = true
                     button.tintColor = .tintColor
                 }
             }
